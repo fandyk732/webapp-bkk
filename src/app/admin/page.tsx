@@ -20,8 +20,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 export default function AdminDashboard() {
   const supabase = createClient();
   const [activeTab, setActiveTab] = useState<'stats' | 'mitra' | 'vacancies' | 'applications'>('stats');
@@ -209,7 +207,7 @@ export default function AdminDashboard() {
     loadAllData();
   };
 
-    const handleLogout = async () => {
+  const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
   };
@@ -225,26 +223,19 @@ export default function AdminDashboard() {
             <p className="text-sm text-slate-500">Manajemen Lowongan, Mitra, dan Pelamar Siswa (Database Connected)</p>
           </div>
           <div className="flex items-center gap-3">
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
+            >
+              <LogOut size={14} /> Keluar Admin
+            </button>
             <button onClick={loadAllData} className="p-2 border rounded-xl hover:bg-slate-100 transition-colors text-slate-600" title="Refresh Data">
               <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
             </button>
             <Link href="/" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
-              <ArrowLeft size={16} /> Kembali ke Landing Page
+              <ArrowLeft size={16} /> Kembali
             </Link>
           </div>
-        </div>
-
-                <div className="flex items-center gap-3">
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
-          >
-            <LogOut size={14} /> Keluar Admin
-          </button>
-          
-          <button onClick={loadAllData} className="p-2 border rounded-xl hover:bg-slate-100 text-slate-600">
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          </button>
         </div>
 
         {/* Navigation Tabs */}
