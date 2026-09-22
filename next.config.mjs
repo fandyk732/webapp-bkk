@@ -4,10 +4,7 @@ import { imageHosts } from './image-hosts.config.mjs';
 const nextConfig = {
   productionBrowserSourceMaps: true,
   distDir: process.env.DIST_DIR || '.next',
-  // Konfigurasi agar Next.js mengizinkan custom webpack tanpa error Turbopack
-  experimental: {
-    turbo: {},
-  },
+  turbopack: {}, // Konfigurasi Turbopack kosong untuk membungkam error
   typescript: {
     ignoreBuildErrors: true,
   },
