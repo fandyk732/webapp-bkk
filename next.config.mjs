@@ -4,6 +4,10 @@ import { imageHosts } from './image-hosts.config.mjs';
 const nextConfig = {
   productionBrowserSourceMaps: true,
   distDir: process.env.DIST_DIR || '.next',
+  // Konfigurasi agar Next.js mengizinkan custom webpack tanpa error Turbopack
+  experimental: {
+    turbo: {},
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -14,19 +18,16 @@ const nextConfig = {
     remotePatterns: imageHosts,
     minimumCacheTTL: 60,
   },
-  webpack(
-    config,
-    {
-      dev: dev
-    }
-  ) {
+  webpack(config, { dev }) {
     if (dev) {
       config.module.rules.push({
         test: /\.(jsx|tsx)$/,
         exclude: [/node_modules/],
-        use: [{
-          loader: '@dhiwise/component-tagger/nextLoader',
-        }],
+        use: [
+          {
+            loader: '@dhiwise/component-tagger/nextLoader',
+          },
+        ],
       });
       const ignoredPaths = (process.env.WATCH_IGNORED_PATHS || '')
         .split(',')
