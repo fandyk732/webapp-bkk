@@ -1,4 +1,4 @@
-# Node modules
+# Node modules & dependencies
 node_modules/
 package-lock.json
 
@@ -8,6 +8,14 @@ out/
 
 # Production build
 build/
+
+# Environment Variables (Sangat Krusial!)
+.env
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 npm-debug.log*
@@ -22,18 +30,12 @@ Thumbs.db
 # Vercel deployment
 .vercel/
 
-# Optional: if using TypeScript
+# TypeScript & IDEs
 *.tsbuildinfo
-
-# Optional: if using testing tools
-coverage/
-jest-test-results.json
-
-# Optional: if using IDEs
 .vscode/
 .idea/
 
-# Optional: if using TurboRepo or monorepo
+# Testing & Monorepo
+coverage/
+jest-test-results.json
 turbo/
-
-.env
