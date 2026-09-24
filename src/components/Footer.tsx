@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
-import { MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
+import { MapPin, Phone, Mail, ExternalLink,  } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -18,20 +18,20 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed max-w-sm">
-              Portal resmi Bursa Kerja Khusus (BKK) SMK Al Kaaffah Kepanjen — menghubungkan siswa dan alumni dengan mitra industri terpercaya untuk PKL dan penempatan kerja.
+              Portal resmi Bursa Kerja Khusus (BKK) SMK Al Kaaffah Kepanjen, menghubungkan siswa dan alumni dengan mitra industri terpercaya untuk PKL dan penempatan kerja.
             </p>
             <div className="mt-5 flex flex-col gap-2.5">
               <div className="flex items-start gap-2.5 text-white/60 text-sm">
                 <MapPin size={14} className="mt-0.5 shrink-0 text-accent" />
-                <span>Jl. Raya Kepanjen No.XX, Kepanjen, Kab. Malang, Jawa Timur 65163</span>
+                <span>Jl. Jalan Semeru No. 18a Dilem, Kepanjen, Kab. Malang, Jawa Timur 65163</span>
               </div>
               <div className="flex items-center gap-2.5 text-white/60 text-sm">
                 <Phone size={14} className="shrink-0 text-accent" />
-                <span>(0341) 395-XXX</span>
+                <span>0813-3332-8174</span>
               </div>
               <div className="flex items-center gap-2.5 text-white/60 text-sm">
                 <Mail size={14} className="shrink-0 text-accent" />
-                <span>bkk@smkalkaaffah-kepanjen.sch.id</span>
+                <span>smkalkaaffahkpj@gmail.com</span>
               </div>
             </div>
           </div>
@@ -79,10 +79,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-white/40 text-xs">
+          <p className="text-white/60 text-xs">
             © 2026 BKK SMK Al Kaaffah Kepanjen. Hak cipta dilindungi.
           </p>
-          <p className="text-white/40 text-xs">
+          <p className="text-white/60 text-xs">
             Dikelola oleh Tim BKK & Guru BK
           </p>
         </div>

@@ -1,8 +1,8 @@
-import React from 'react';
-import type { CVData } from './CVBuilderClient';
-import { MapPin, Phone, Mail, GraduationCap, Briefcase, Wrench, User } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
+'use client';
 
+import React from 'react';
+import { MapPin, Phone, Mail, GraduationCap, Briefcase, Wrench, User } from 'lucide-react';
+import type { CVData } from './cv-constants';
 
 export default function CVPreview({
   data,
@@ -217,7 +217,7 @@ export default function CVPreview({
 
 function CVSection({
   title,
-  icon: Icon,
+  icon: SectionIcon,
   children,
   fullView,
 }: {
@@ -232,7 +232,7 @@ function CVSection({
         className={`flex items-center gap-1.5 font-extrabold text-white px-2 py-1 rounded mb-2 ${fullView ? 'text-xs' : 'text-[8px]'}`}
         style={{ backgroundColor: 'var(--primary)' }}
       >
-        <Icon size={fullView ? 11 : 8} />
+        <SectionIcon size={fullView ? 11 : 8} />
         {title}
       </div>
       {children}

@@ -1,8 +1,14 @@
-
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+
+// Define Interface untuk SignUp Metadata agar TypeScript paham isinya
+interface SignUpMetadata {
+  fullName?: string;
+  avatarUrl?: string;
+  [key: string]: any; // Untuk antisipasi data tambahan lain
+}
 
 const AuthContext = createContext<any>({});
 
@@ -40,15 +46,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Email/Password Sign Up
-  const signUp = async (email: string, password: string, metadata = {}) => {
+  // Email/Password Sign Up dengan tipe data SignUpMetadata
+  const signUp = async (email: string, password: string, metadata: SignUpMetadata = {}) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          full_name: metadata?.fullName || '',
-          avatar_url: metadata?.avatarUrl || ''
+          full_name: metadata.fullName || '',
+          avatar_url: metadata.avatarUrl || ''
         },
         emailRedirectTo: `${window.location.origin}/auth/callback`
       }

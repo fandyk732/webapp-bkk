@@ -27,6 +27,7 @@
     "react-hook-form": "^7.54.0",
     "recharts": "^2.15.2",
     "sonner": "^1.7.4",
+    "swr": "^2.5.1",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {

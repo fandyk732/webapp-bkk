@@ -1,50 +1,38 @@
-import React from 'react';
-import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
-import '../styles/tailwind.css';
-import { Toaster } from 'sonner';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-plus-jakarta',
-  display: 'swap',
-});
+// Panggil file tailwind.css kamu (sesuaikan path foldernya)
+import '@/styles/tailwind.css'; // Atau: import '@/app/tailwind.css';
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-};
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { AuthProvider } from '@/contexts/AuthContext';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'BKKMitradudi — Portal Karir & PKL SMK Al Kaaffah Kepanjen',
-  description:
-    'Portal resmi BKK SMK Al Kaaffah Kepanjen untuk menemukan lowongan PKL dan kerja, mitra industri, serta membuat CV profesional untuk siswa dan alumni.',
-  icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
-  },
+  title: 'BKK SMK Al Kaaffah',
+  description: 'Portal Bursa Kerja Khusus & PKL SMK Al Kaaffah Kepanjen',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="id" className={plusJakarta.variable}>
-      <body className={plusJakarta.className}>
-        {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              fontFamily: 'var(--font-plus-jakarta)',
-              fontSize: '0.875rem',
-              letterSpacing: '-0.015em',
-            },
-          }}
-        />
-
-        <script type="module" async src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fbkkmitradu7039back.builtwithrocket.new&_be=https%3A%2F%2Fappanalytics.rocket.new&_v=0.1.20" />
-        <script type="module" defer src="https://static.rocket.new/rocket-shot.js?v=0.0.3" /></body>
+    <html lang="id">
+      <body className={inter.className}>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen bg-background">
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
