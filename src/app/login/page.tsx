@@ -1,20 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { ArrowLeft, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 
-export default function LoginPage() {
+function LoginContent() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+
+  // Baca parameter redirect dari URL (misal: /login?redirectTo=/admin atau /login?next=/admin)
+  const nextTarget = searchParams.get('redirectTo') || searchParams.get('next') || '/admin';
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+
+    // Tempelkan parameter next ke URL callback jika ada
+    const callbackTarget = nextTarget
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextTarget)}`
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackTarget,
       },
     });
 
@@ -71,5 +82,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-xs text-slate-500">Memuat halaman login...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

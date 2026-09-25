@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 // Define Interface untuk SignUp Metadata agar TypeScript paham isinya
 interface SignUpMetadata {

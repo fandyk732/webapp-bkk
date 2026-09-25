@@ -1,10 +1,11 @@
+import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  // Ambil parameter next dari URL callback (default ke / jika tidak ada)
   const next = searchParams.get('next') ?? '/';
 
   if (code) {
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
                 cookieStore.set(name, value, options)
               );
             } catch {
-              // Middleware akan menangani jika dipanggil dari Server Component
+              // The `setAll` method was called from a Server Component.
             }
           },
         },
@@ -32,6 +33,7 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Direct redirect ke URL tujuan (misal: /admin)
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

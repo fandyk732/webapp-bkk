@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, GraduationCap, ChevronDown, Menu, X, FileText, Briefcase, Home } from 'lucide-react';
+import { LogOut, GraduationCap, ChevronDown, Menu, X, FileText, Briefcase, Home, ShieldCheck } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -18,6 +18,12 @@ export default function Navbar() {
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const userInitial = userName.charAt(0).toUpperCase();
+
+  // Pengecekan status Admin (bisa via metadata atau daftar email admin)
+  const isAdmin = user && (
+    user.user_metadata?.role === 'admin' ||
+    user.email === 'admin@smkalkaaffah.sch.id' // Tambahkan email admin kamu di sini jika diperlukan
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/90 backdrop-blur-md">
@@ -36,7 +42,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* MENU DESKTOP (Tengah - Hanya tampil di MD ke atas) */}
+        {/* MENU DESKTOP (Tengah) */}
         <nav className="hidden md:flex md:col-span-6 items-center justify-center gap-1 sm:gap-2">
           <Link
             href="/"
@@ -98,6 +104,18 @@ export default function Navbar() {
                         <p className="text-xs font-bold text-foreground truncate">{userName}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
                       </div>
+
+                      {/* Tombol Akses Dashboard Admin (Muncul khusus Admin) */}
+                      {isAdmin && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-xl hover:bg-amber-100 transition-colors mb-1"
+                        >
+                          <ShieldCheck size={14} className="text-amber-600" /> Dashboard Admin
+                        </Link>
+                      )}
+
                       <Link
                         href="/job-pkl-board"
                         onClick={() => setIsDropdownOpen(false)}
@@ -184,6 +202,18 @@ export default function Navbar() {
                     <span className="text-[10px] text-muted-foreground">{user.email}</span>
                   </div>
                 </div>
+
+                {/* Tombol Admin Khusus Mobile */}
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-bold text-amber-700 bg-amber-100 rounded-xl border border-amber-300"
+                  >
+                    <ShieldCheck size={16} /> Dashboard Admin
+                  </Link>
+                )}
+
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);

@@ -14,6 +14,23 @@ interface ApplyFormTabProps {
   onClose: () => void;
 }
 
+// Batas & aturan berkas CV — divalidasi di client sebagai first line of defense.
+// CATATAN: ini TIDAK menggantikan pembatasan di sisi Supabase Storage (file size limit,
+// allowed MIME types di bucket policy). Validasi client selalu bisa dilewati lewat
+// devtools/panggilan API langsung — lihat rls-recommendations.sql untuk hardening sisi server.
+const MAX_CV_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+const ALLOWED_CV_TYPE = 'application/pdf';
+
+function generateSecureFileName(originalName: string): string {
+  const fileExt = (originalName.split('.').pop() || 'pdf').toLowerCase();
+  // Pakai UUID acak — JANGAN embed data siswa (NIS/NISN) ke dalam path file publik.
+  const randomId =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  return `${randomId}.${fileExt}`;
+}
+
 export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
   const supabase = createClient();
   const [submitting, setSubmitting] = useState(false);
@@ -62,17 +79,27 @@ export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
     let cvPublicUrl = '';
 
     try {
+      // 1. Upload Berkas CV (jika melampirkan file)
       if (data.cvFile && data.cvFile.length > 0) {
         const file = data.cvFile[0];
-        const fileExt = file.name.split('.').pop() || 'pdf';
-        const fileName = `${Date.now()}_${data.nis}_${Math.random()
-          .toString(36)
-          .substring(7)}.${fileExt}`;
+
+        if (file.type !== ALLOWED_CV_TYPE) {
+          throw new Error('Berkas CV harus berformat PDF.');
+        }
+        if (file.size > MAX_CV_SIZE_BYTES) {
+          throw new Error('Ukuran berkas CV maksimal 2MB.');
+        }
+
+        const fileName = generateSecureFileName(file.name);
         const filePath = `resumes/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('cvs')
-          .upload(filePath, file, { cacheControl: '3600', upsert: false });
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: ALLOWED_CV_TYPE,
+          });
 
         if (uploadError) throw new Error('Gagal unggah berkas CV: ' + uploadError.message);
 
@@ -80,8 +107,10 @@ export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
         cvPublicUrl = publicUrlData.publicUrl;
       }
 
+      // 2. Simpan Data Pelamar ke Tabel pelamar (Sertakan user_id untuk RLS)
       const { error: insertError } = await supabase.from('pelamar').insert([
         {
+          user_id: user.id, // Wajib untuk RLS Supabase
           lowongan_id: vacancy.id,
           posisi_dilamar: vacancy.title,
           nama_perusahaan: vacancy.company,
@@ -98,12 +127,25 @@ export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
 
       if (insertError) throw new Error(insertError.message);
 
+      // 3. Tambah quota_used (+1)
+      try {
+        const currentQuotaUsed = Number(vacancy.quotaUsed || 0);
+        await supabase
+          .from('lowongan_kerja')
+          .update({ quota_used: currentQuotaUsed + 1 })
+          .eq('id', vacancy.id);
+      } catch (quotaErr) {
+        console.warn('Gagal mengupdate quota_used:', quotaErr);
+      }
+
+      // 4. Tampilkan Toast Sukses & Tutup Form Drawer
       toast.success(
         `Lamaran untuk "${vacancy.title}" berhasil dikirim! Tim BKK akan menghubungi kamu.`
       );
       reset();
       onClose();
     } catch (err: any) {
+      console.error('Submit Error:', err);
       toast.error(`Gagal mengirim lamaran: ${err.message || 'Terjadi kesalahan sistem'}`);
     } finally {
       setSubmitting(false);
@@ -299,8 +341,26 @@ export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
               ? selectedCvFile[0].name
               : 'Klik untuk pilih file CV (PDF)'}
           </span>
-          <input id="apply-cv" type="file" accept=".pdf" className="hidden" {...register('cvFile')} />
+          <input
+            id="apply-cv"
+            type="file"
+            accept=".pdf,application/pdf"
+            className="hidden"
+            {...register('cvFile', {
+              validate: {
+                isPdf: (files) => {
+                  if (!files || files.length === 0) return true;
+                  return files[0].type === ALLOWED_CV_TYPE || 'Berkas harus berformat PDF';
+                },
+                maxSize: (files) => {
+                  if (!files || files.length === 0) return true;
+                  return files[0].size <= MAX_CV_SIZE_BYTES || 'Ukuran berkas maksimal 2MB';
+                },
+              },
+            })}
+          />
         </label>
+        {errors.cvFile && <p className="text-xs text-danger mt-1">{errors.cvFile.message}</p>}
       </div>
 
       {/* Submit Button */}
