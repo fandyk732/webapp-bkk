@@ -1,23 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Sparkles, ArrowRight, GraduationCap, Award } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { mockDataService, HeroStats } from '@/lib/mockStore';
 
 export default function HeroSection() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [stats, setStats] = useState<HeroStats>(mockDataService.getStats());
-
-  useEffect(() => {
-    const handleStorageUpdate = () => {
-      setStats(mockDataService.getStats());
-    };
-    window.addEventListener('storage-updated', handleStorageUpdate);
-    return () => window.removeEventListener('storage-updated', handleStorageUpdate);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

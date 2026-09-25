@@ -15,7 +15,7 @@ export default function CompanyGrid() {
       setLoading(true);
       const { data, error } = await supabase
         .from('mitra_industri')
-        .select('*')
+        .select('id, nama, logo, sektor, lokasi, jurusan')
         .order('created_at', { ascending: false });
 
       if (!error && data) {

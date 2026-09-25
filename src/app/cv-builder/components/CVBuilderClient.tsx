@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ChevronRight, ChevronLeft, Download, Printer, CheckCircle2, Eye, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Printer, CheckCircle2, Eye, X } from 'lucide-react';
 
 import { CVData, STEPS } from './cv-constants';
 import CVPreview from './CVPreview';
@@ -69,7 +69,7 @@ export default function CVBuilderClient() {
     };
     setCvData(finalData);
     setShowPreview(true);
-    toast.success('CV berhasil dibuat! Klik tombol Download untuk mengunduh.');
+    toast.success('CV berhasil dibuat! Klik tombol "Cetak / Simpan sebagai PDF" untuk mengunduh.');
   };
 
   const completionPercent = Math.round(((currentStep - 1) / 4) * 100);
@@ -192,11 +192,13 @@ function CVPreviewModal({ data, onClose }: { data: Partial<CVData>; onClose: () 
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <h3 className="font-bold text-base text-foreground">CV Siap Unduh</h3>
           <div className="flex items-center gap-2">
-            <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-xl text-sm font-semibold">
-              <Printer size={15} /> Cetak
-            </button>
+            {/* Sebelumnya ada 2 tombol ("Cetak" & "Unduh PDF") yang manggil window.print()
+                yang sama persis — digabung jadi 1 tombol yang jujur soal apa yang
+                sebenarnya terjadi (browser print dialog, yang punya opsi "Save as PDF"
+                di kebanyakan browser). PDF generation asli (tanpa dialog print) butuh
+                library tambahan seperti jspdf/html2canvas yang belum ada di project ini. */}
             <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold">
-              <Download size={15} /> Unduh PDF
+              <Printer size={15} /> Cetak / Simpan sebagai PDF
             </button>
             <button onClick={onClose} className="p-2 rounded-xl hover:bg-muted">
               <X size={18} className="text-muted-foreground" />

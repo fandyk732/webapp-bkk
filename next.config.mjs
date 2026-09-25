@@ -2,7 +2,8 @@ import { imageHosts } from './image-hosts.config.mjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  productionBrowserSourceMaps: true,
+  // Dimatikan: source map production expose source code readable ke browser publik.
+  productionBrowserSourceMaps: false,
   distDir: process.env.DIST_DIR || '.next',
   turbopack: {}, // Konfigurasi Turbopack kosong untuk membungkam error
   typescript: {

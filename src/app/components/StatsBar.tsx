@@ -5,40 +5,42 @@ import { createClient } from '@/utils/supabase/server';
 export default async function StatsBar() {
   const supabase = await createClient();
 
-  // 1. Fetch total lowongan aktif
-  const { count: totalLowongan } = await supabase
-    .from('lowongan_kerja')
-    .select('*', { count: 'exact', head: true })
-    .eq('is_active', true);
-
-  // 2. Fetch data kuota PKL dari lowongan aktif
-  const { data: pklVacancies } = await supabase
-    .from('lowongan_kerja')
-    .select('quota, quota_used')
-    .eq('is_active', true)
-    .in('type', ['PKL', 'Keduanya']);
+  // Semua query independen dijalankan paralel (Promise.all) alih-alih
+  // sequential await satu-satu — mengurangi total latency dari ~6x round-trip
+  // jadi ~1x round-trip (dibatasi query terlambat, bukan jumlah query).
+  const [
+    { count: totalLowongan },
+    { data: pklVacancies },
+    { count: totalMitra },
+    { count: totalAlumni },
+    { count: totalTerserap },
+  ] = await Promise.all([
+    // 1. Total lowongan aktif
+    supabase.from('lowongan_kerja').select('*', { count: 'exact', head: true }).eq('is_active', true),
+    // 2. Data kuota PKL dari lowongan aktif
+    supabase
+      .from('lowongan_kerja')
+      .select('quota, quota_used')
+      .eq('is_active', true)
+      .in('type', ['PKL', 'Keduanya']),
+    // 3. Total Mitra Industri — dihitung dari tabel mitra_industri langsung
+    //    (sebelumnya salah: dihitung dari unique `company` di lowongan_kerja,
+    //    yang bisa beda jumlah dengan yang sebenarnya tampil di MitraGrid).
+    //    `head: true` supaya cuma narik count, bukan seluruh baris.
+    supabase.from('mitra_industri').select('*', { count: 'exact', head: true }).eq('status', 'Aktif'),
+    // 4. Total alumni
+    supabase.from('alumni').select('*', { count: 'exact', head: true }),
+    // 5. Alumni yang sudah terserap kerja
+    supabase
+      .from('alumni')
+      .select('*', { count: 'exact', head: true })
+      .neq('status_penempatan', 'Belum Bekerja'),
+  ]);
 
   const totalKuotaPkl = (pklVacancies || []).reduce(
     (acc, curr) => acc + Math.max(0, (curr.quota || 0) - (curr.quota_used || 0)),
     0
   );
-
-  // 3. Fetch total Mitra Industri unik
-  const { data: companies } = await supabase
-    .from('lowongan_kerja')
-    .select('company');
-  
-  const totalMitra = new Set((companies || []).map((c) => c.company)).size;
-
-  // 4. Kalkulasi Dinamis Tingkat Penempatan Alumni
-  const { count: totalAlumni } = await supabase
-    .from('alumni')
-    .select('*', { count: 'exact', head: true });
-
-  const { count: totalTerserap } = await supabase
-    .from('alumni')
-    .select('*', { count: 'exact', head: true })
-    .neq('status_penempatan', 'Belum Bekerja');
 
   // Hitung persentase (Default ke 0 jika data alumni masih kosong)
   const placementRate = totalAlumni && totalAlumni > 0

@@ -79,6 +79,26 @@ export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
     let cvPublicUrl = '';
 
     try {
+      // 0. Cek apakah user ini sudah pernah melamar ke lowongan yang sama sebelumnya
+      const { data: existingApplication, error: checkError } = await supabase
+        .from('pelamar')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('lowongan_id', vacancy.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.warn('Gagal memeriksa lamaran duplikat:', checkError.message);
+        // Tidak menghentikan proses kalau pengecekan gagal (mis. RLS belum
+        // mengizinkan SELECT) — biar tidak memblokir siswa melamar hanya
+        // karena pengecekan ini error. Duplikasi tetap bisa dicegah lebih
+        // kuat lewat UNIQUE constraint di database (lihat catatan di bawah).
+      } else if (existingApplication) {
+        toast.error('Kamu sudah pernah melamar untuk posisi ini sebelumnya.');
+        setSubmitting(false);
+        return;
+      }
+
       // 1. Upload Berkas CV (jika melampirkan file)
       if (data.cvFile && data.cvFile.length > 0) {
         const file = data.cvFile[0];
@@ -125,15 +145,39 @@ export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
         },
       ]);
 
-      if (insertError) throw new Error(insertError.message);
+      if (insertError) {
+        // Constraint UNIQUE (user_id, lowongan_id) di DB — jaring pengaman terakhir
+        // kalau pengecekan duplikat di awal (langkah 0) kelolosan karena race
+        // condition (mis. double-click atau 2 tab dibuka bersamaan).
+        if (insertError.code === '23505') {
+          throw new Error('Kamu sudah pernah melamar untuk posisi ini sebelumnya.');
+        }
+        throw new Error(insertError.message);
+      }
 
-      // 3. Tambah quota_used (+1)
+      // 3. Tambah quota_used (+1) — pakai optimistic concurrency check.
+      // CATATAN: ini BUKAN atomic increment sesungguhnya (yang benar butuh RPC/trigger
+      // di sisi Supabase). Tapi dengan .eq('quota_used', currentQuotaUsed), update ini
+      // cuma berhasil kalau nilainya masih sama persis dengan yang kita baca tadi —
+      // kalau ada pelamar lain yang nyalip duluan, update ini akan affect 0 baris
+      // (kegagalan senyap dulu, dicatat di console) daripada overwrite diam-diam ke
+      // nilai yang salah (lost update).
       try {
         const currentQuotaUsed = Number(vacancy.quotaUsed || 0);
-        await supabase
+        const { data: quotaUpdateData, error: quotaError } = await supabase
           .from('lowongan_kerja')
           .update({ quota_used: currentQuotaUsed + 1 })
-          .eq('id', vacancy.id);
+          .eq('id', vacancy.id)
+          .eq('quota_used', currentQuotaUsed)
+          .select('id');
+
+        if (quotaError) {
+          console.warn('Gagal mengupdate quota_used:', quotaError.message);
+        } else if (!quotaUpdateData || quotaUpdateData.length === 0) {
+          console.warn(
+            'quota_used tidak ter-update — kemungkinan ada pelamar lain yang submit bersamaan. Lamaran tetap tersimpan, tapi hitungan slot mungkin perlu disinkronkan manual oleh admin.'
+          );
+        }
       } catch (quotaErr) {
         console.warn('Gagal mengupdate quota_used:', quotaErr);
       }

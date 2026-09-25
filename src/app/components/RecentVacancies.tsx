@@ -15,7 +15,7 @@ export default function JobFeed() {
       setLoading(true);
       const { data, error } = await supabase
         .from('lowongan_kerja')
-        .select('*')
+        .select('id, title, company, type, majors, location, salary, deadline')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(4);
