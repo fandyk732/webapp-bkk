@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ChevronRight, ChevronLeft, Printer, CheckCircle2, Eye, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Printer, CheckCircle2, Eye, X, Download } from 'lucide-react';
 
 import { CVData, STEPS } from './cv-constants';
 import CVPreview from './CVPreview';
@@ -69,7 +69,7 @@ export default function CVBuilderClient() {
     };
     setCvData(finalData);
     setShowPreview(true);
-    toast.success('CV berhasil dibuat! Klik tombol "Cetak / Simpan sebagai PDF" untuk mengunduh.');
+    toast.success('CV berhasil dibuat! Klik "Unduh File PDF" untuk mendownload langsung.');
   };
 
   const completionPercent = Math.round(((currentStep - 1) / 4) * 100);
@@ -185,6 +185,43 @@ export default function CVBuilderClient() {
 }
 
 function CVPreviewModal({ data, onClose }: { data: Partial<CVData>; onClose: () => void }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Dynamic Import html2pdf.js agar tidak error "self is not defined" di Next.js SSR
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById('cv-pdf-download-content');
+    if (!element) {
+      toast.error('Elemen dokumen CV tidak ditemukan.');
+      return;
+    }
+
+    setIsGenerating(true);
+
+    try {
+      // Import library secara dinamis hanya saat tombol diklik (Client-side browser)
+      const html2pdfModule = (await import('html2pdf.js')).default;
+
+      const fileName = `CV_${data.fullName ? data.fullName.replace(/\s+/g, '_') : 'Siswa_BKK'}.pdf`;
+
+      const opt = {
+        margin: [5, 5, 5, 5],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+
+      await html2pdfModule().set(opt as any).from(element).save();
+      toast.success('File PDF berhasil terunduh!');
+    } catch (err) {
+      console.error('PDF Export Error:', err);
+      toast.error('Gagal mengunduh PDF secara otomatis, mencoba dialog print...');
+      window.print();
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
       <div className="drawer-overlay absolute inset-0" onClick={onClose} />
@@ -192,21 +229,32 @@ function CVPreviewModal({ data, onClose }: { data: Partial<CVData>; onClose: () 
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <h3 className="font-bold text-base text-foreground">CV Siap Unduh</h3>
           <div className="flex items-center gap-2">
-            {/* Sebelumnya ada 2 tombol ("Cetak" & "Unduh PDF") yang manggil window.print()
-                yang sama persis — digabung jadi 1 tombol yang jujur soal apa yang
-                sebenarnya terjadi (browser print dialog, yang punya opsi "Save as PDF"
-                di kebanyakan browser). PDF generation asli (tanpa dialog print) butuh
-                library tambahan seperti jspdf/html2canvas yang belum ada di project ini. */}
-            <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold">
-              <Printer size={15} /> Cetak / Simpan sebagai PDF
+            {/* Tombol Unduh File PDF Asli */}
+            <button
+              onClick={handleDownloadPdf}
+              disabled={isGenerating}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Download size={15} />
+              {isGenerating ? 'Membuat PDF...' : 'Unduh File PDF'}
             </button>
+
+            {/* Tombol Cetak / Print Browser */}
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-2 px-3 py-2 bg-muted text-foreground rounded-xl text-sm font-medium hover:bg-muted/80 transition-all"
+              title="Cetak via Browser"
+            >
+              <Printer size={15} />
+            </button>
+
             <button onClick={onClose} className="p-2 rounded-xl hover:bg-muted">
               <X size={18} className="text-muted-foreground" />
             </button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="cv-paper rounded-xl overflow-hidden">
+          <div id="cv-pdf-download-content" className="cv-paper rounded-xl overflow-hidden bg-white">
             <CVPreview data={data} fullView />
           </div>
         </div>

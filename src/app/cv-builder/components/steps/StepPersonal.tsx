@@ -64,16 +64,15 @@ export default function StepPersonal({ register, errors, updateCvData }: StepPer
               onChange={updateCvData}
             >
               <option value="">Pilih Kelas</option>
-              <option value="XI TKJ 1">XI TKJ 1</option>
-              <option value="XI TKJ 2">XI TKJ 2</option>
+              <option value="X TKJ">X TKJ</option>
+              <option value="X TAV">X TAV</option>
+              <option value="X TKR">X TKR</option>
+              <option value="XI TKJ">XI TKJ</option>
               <option value="XI TAV">XI TAV</option>
-              <option value="XI TKR 1">XI TKR 1</option>
-              <option value="XI TKR 2">XI TKR 2</option>
-              <option value="XII TKJ 1">XII TKJ 1</option>
-              <option value="XII TKJ 2">XII TKJ 2</option>
+              <option value="XI TKR">XI TKR</option>
+              <option value="XII TKJ">XII TKJ</option>
               <option value="XII TAV">XII TAV</option>
-              <option value="XII TKR 1">XII TKR 1</option>
-              <option value="XII TKR 2">XII TKR 2</option>
+              <option value="XII TKR">XII TKR</option>
               <option value="Alumni">Alumni</option>
             </select>
             <ChevronRight size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90" />

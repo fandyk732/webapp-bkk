@@ -276,6 +276,7 @@ export default function ApplyFormTab({ vacancy, onClose }: ApplyFormTabProps) {
               {...register('kelas', { required: 'Kelas wajib dipilih' })}
             >
               <option value="">Pilih</option>
+              <option value="X">X</option>
               <option value="XI">XI</option>
               <option value="XII">XII</option>
               <option value="Alumni">Alumni</option>

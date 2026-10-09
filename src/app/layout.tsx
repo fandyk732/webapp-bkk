@@ -7,6 +7,7 @@ import '@/styles/tailwind.css'; // Atau: import '@/app/tailwind.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,6 +32,10 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
+          {/* Tanpa ini, semua toast.success()/toast.error() di seluruh app
+              (ApplyFormTab, CVBuilderClient, dll) tidak akan menampilkan
+              apa-apa ke user — dipanggil tapi tidak ada UI untuk merendernya. */}
+          <Toaster richColors position="top-center" />
         </AuthProvider>
       </body>
     </html>

@@ -111,10 +111,10 @@ export default function CVPreview({
         </CVSection>
       )}
 
-      {/* Profil Singkat */}
+      {/* Profil Singkat (Fixed Layout untuk Kalimat Panjang) */}
       {data.aboutMe && (
         <CVSection title="PROFIL SINGKAT" icon={User} fullView={fullView}>
-          <p className={`text-foreground leading-relaxed ${fullView ? 'text-sm' : 'text-[9px]'}`}>
+          <p className={`text-foreground leading-relaxed whitespace-pre-line break-words text-justify ${fullView ? 'text-sm' : 'text-[9px]'}`}>
             {data.aboutMe}
           </p>
         </CVSection>
@@ -137,7 +137,7 @@ export default function CVPreview({
           {data.certifications && (
             <div className={`mt-2 pt-2 border-t border-border ${fullView ? 'text-xs' : 'text-[8px]'}`}>
               <p className="font-semibold text-foreground mb-1">Sertifikasi & Prestasi:</p>
-              <p className="text-muted-foreground whitespace-pre-line">{data.certifications}</p>
+              <p className="text-muted-foreground whitespace-pre-line break-words">{data.certifications}</p>
             </div>
           )}
         </CVSection>
@@ -196,12 +196,12 @@ export default function CVPreview({
                 )}
               </div>
               {data.pklDescription && (
-                <p className={`text-muted-foreground mt-1 ${fullView ? 'text-xs' : 'text-[8px]'}`}>{data.pklDescription}</p>
+                <p className={`text-muted-foreground mt-1 whitespace-pre-line break-words ${fullView ? 'text-xs' : 'text-[8px]'}`}>{data.pklDescription}</p>
               )}
             </div>
           )}
           {data.workExperience && (
-            <p className={`text-muted-foreground ${fullView ? 'text-xs' : 'text-[8px]'}`}>{data.workExperience}</p>
+            <p className={`text-muted-foreground whitespace-pre-line break-words ${fullView ? 'text-xs' : 'text-[8px]'}`}>{data.workExperience}</p>
           )}
         </CVSection>
       )}
@@ -245,7 +245,7 @@ function CVRow({ label, value }: { label: string; value: string }) {
     <div className="flex gap-1">
       <span className="text-muted-foreground shrink-0 w-24">{label}</span>
       <span className="text-muted-foreground shrink-0">:</span>
-      <span className="text-foreground font-medium">{value}</span>
+      <span className="text-foreground font-medium break-words">{value}</span>
     </div>
   );
 }

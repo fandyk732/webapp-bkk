@@ -4,6 +4,7 @@ import StatsBar from './components/StatsBar';
 import MitraGrid from './components/MitraGrid';
 import RecentVacancies from './components/RecentVacancies';
 import CTASection from './components/CTASection';
+import SurveyWrapper from '@/components/SurveyWrapper';
 
 export default function PublicPortalHome() {
   return (
@@ -13,6 +14,9 @@ export default function PublicPortalHome() {
       <MitraGrid />
       <RecentVacancies />
       <CTASection />
+
+      {/* Client wrapper untuk cek & render modal survey secara mandiri */}
+      <SurveyWrapper />
     </>
   );
 }
