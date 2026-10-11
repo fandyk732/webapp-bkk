@@ -15,6 +15,13 @@ export interface MitraForm {
   mou_year: string;
   kerjasama_sejak: number;
   status: string;
+  deskripsi: string;
+  website: string;
+  email_hrd: string;
+  program_kemitraan: string[];
+  jobdesk_overview: string;
+  kualifikasi_umum: string;
+  fasilitas_benefit: string;
 }
 
 export interface JobForm {

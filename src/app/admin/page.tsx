@@ -19,7 +19,6 @@ export default function AdminDashboard() {
   // Database States
   const [vacancies, setVacancies] = useState<any[]>([]);
   const [mitra, setMitra] = useState<any[]>([]);
-  const [alumni, setAlumni] = useState<any[]>([]);
   const [applicants, setApplicants] = useState<any[]>([]);
 
   // Stats State
@@ -31,7 +30,7 @@ export default function AdminDashboard() {
     totalPelamar: 0
   });
 
-  // Form States - Mitra
+  // Form States - Mitra (Sudah disesuaikan dengan interface MitraForm terbaru)
   const [newMitra, setNewMitra] = useState<MitraForm>({
     nama: '',
     logo: '',
@@ -40,7 +39,14 @@ export default function AdminDashboard() {
     jurusan: ['TKJ'],
     mou_year: '2024-2027',
     kerjasama_sejak: 2024,
-    status: 'Aktif'
+    status: 'Aktif',
+    deskripsi: '',
+    website: '',
+    email_hrd: '',
+    program_kemitraan: ['PKL', 'KERJA'],
+    jobdesk_overview: '',
+    kualifikasi_umum: '',
+    fasilitas_benefit: ''
   });
 
   // Form States - Lowongan
@@ -62,30 +68,35 @@ export default function AdminDashboard() {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const { data: vacData } = await supabase.from('lowongan_kerja').select('*').order('created_at', { ascending: false });
-      const { data: mitraData } = await supabase.from('mitra_industri').select('*').order('created_at', { ascending: false });
-      const { data: alumniData } = await supabase.from('alumni').select('*');
-      const { data: applicantsData } = await supabase.from('pelamar').select('*').order('created_at', { ascending: false });
+      // Direct query ke nama tabel persis sesuai Supabase
+      const [
+        { data: vacData },
+        { data: mitraData },
+        { data: applicantsData },
+        { data: surveyData }
+      ] = await Promise.all([
+        supabase.from('lowongan_kerja').select('*').order('created_at', { ascending: false }),
+        supabase.from('mitra_industri').select('*').order('created_at', { ascending: false }),
+        supabase.from('pelamar').select('*').order('created_at', { ascending: false }),
+        supabase.from('student_surveys').select('career_plan')
+      ]);
 
       setVacancies(vacData || []);
       setMitra(mitraData || []);
-      setAlumni(alumniData || []);
       setApplicants(applicantsData || []);
 
-      const activeJobs = (vacData || []).filter((v) => v.is_active);
-      const uniqueCompanies = new Set((vacData || []).map((v) => v.company)).size;
-      const pklQuota = activeJobs
-        .filter((v) => ['PKL', 'Keduanya'].includes(v.type))
-        .reduce((acc, curr) => acc + Math.max(0, (curr.quota || 0) - (curr.quota_used || 0)), 0);
-
-      const totalAlumni = (alumniData || []).length;
-      const terserap = (alumniData || []).filter((a) => a.status_penempatan !== 'Belum Bekerja').length;
+      // Hitung ringkasan statistik secara konsisten
+      const activeJobs = (vacData || []).filter((v) => v.is_active !== false);
+      const pklQuota = (surveyData || []).filter((s) => s.career_plan === 'PKL').length;
+      const totalSurvey = (surveyData || []).length;
+      const siswaSiap = (surveyData || []).filter((s) => s.career_plan === 'KERJA' || s.career_plan === 'PKL').length;
+      const placementRate = totalSurvey > 0 ? ((siswaSiap / totalSurvey) * 100).toFixed(1) : '0.0';
 
       setStatsData({
-        mitraAktif: uniqueCompanies || (mitraData || []).length,
+        mitraAktif: (mitraData || []).length,
         lowonganTerbuka: activeJobs.length,
         slotPKL: pklQuota,
-        tingkatPenempatan: totalAlumni > 0 ? ((terserap / totalAlumni) * 100).toFixed(1) : '0.0',
+        tingkatPenempatan: placementRate,
         totalPelamar: (applicantsData || []).length
       });
     } catch (err) {
@@ -126,7 +137,23 @@ export default function AdminDashboard() {
       alert('Gagal menambah mitra: ' + error.message);
     } else {
       alert('Mitra Industri berhasil disimpan!');
-      setNewMitra({ ...newMitra, nama: '', logo: '' });
+      setNewMitra({
+        nama: '',
+        logo: '',
+        sektor: 'Teknologi & Informasi',
+        lokasi: 'Malang',
+        jurusan: ['TKJ'],
+        mou_year: '2024-2027',
+        kerjasama_sejak: 2024,
+        status: 'Aktif',
+        deskripsi: '',
+        website: '',
+        email_hrd: '',
+        program_kemitraan: ['PKL', 'KERJA'],
+        jobdesk_overview: '',
+        kualifikasi_umum: '',
+        fasilitas_benefit: ''
+      });
       loadAllData();
     }
   };
