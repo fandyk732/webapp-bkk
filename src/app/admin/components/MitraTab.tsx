@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { 
-  Plus, Trash2, Image as ImageIcon, Building2, Globe, Mail, 
-  Briefcase, FileText, CheckCircle2, Gift, MapPin, Eye, Edit3, X
+  Plus, Trash2, Image as ImageIcon, Building2, Globe, 
+  Briefcase, CheckCircle2, Gift, MapPin, Eye, Edit3, X, Save 
 } from 'lucide-react';
 import type { MitraForm } from '../types';
 
@@ -14,6 +14,9 @@ interface MitraTabProps {
   handleMajorToggle: (major: string, isJob: boolean) => void;
   mitra: any[];
   handleDeleteMitra: (id: string) => void;
+  editingMitraId?: string | null;
+  onEditMitraClick?: (item: any) => void;
+  onCancelEditMitra?: () => void;
 }
 
 export default function MitraTab({
@@ -23,6 +26,9 @@ export default function MitraTab({
   handleMajorToggle,
   mitra,
   handleDeleteMitra,
+  editingMitraId,
+  onEditMitraClick,
+  onCancelEditMitra,
 }: MitraTabProps) {
   const [selectedMitraDetail, setSelectedMitraDetail] = useState<any | null>(null);
 
@@ -52,12 +58,24 @@ export default function MitraTab({
           <div>
             <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <Building2 className="text-blue-600" size={20} />
-              Kelola Profil Mitra Industri
+              {editingMitraId ? 'Edit Profil Mitra Industri' : 'Kelola Profil Mitra Industri'}
             </h2>
             <p className="text-xs text-slate-500">
-              Isi informasi detail agar siswa paham gambaran kerja/PKL di perusahaan ini
+              {editingMitraId 
+                ? 'Perbarui informasi detail mitra industri' 
+                : 'Isi informasi detail agar siswa paham gambaran kerja/PKL di perusahaan ini'}
             </p>
           </div>
+
+          {editingMitraId && onCancelEditMitra && (
+            <button
+              type="button"
+              onClick={onCancelEditMitra}
+              className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center gap-1"
+            >
+              <X size={14} /> Batal Edit
+            </button>
+          )}
         </div>
 
         {/* Section 1: Informasi Umum */}
@@ -262,9 +280,12 @@ export default function MitraTab({
 
         <button 
           type="submit" 
-          className="w-full py-3 bg-blue-600 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-md active:scale-95"
+          className={`w-full py-3 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 ${
+            editingMitraId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
-          <Plus size={16} /> Simpan Mitra Industri
+          {editingMitraId ? <Save size={16} /> : <Plus size={16} />}
+          {editingMitraId ? 'Simpan Perubahan Mitra' : 'Simpan Mitra Industri'}
         </button>
       </form>
 
@@ -286,7 +307,11 @@ export default function MitraTab({
             mitra.map((item) => (
               <div 
                 key={item.id} 
-                className="p-3.5 rounded-2xl border border-slate-100 hover:border-blue-200 bg-slate-50/50 hover:bg-white transition-all space-y-2"
+                className={`p-3.5 rounded-2xl border transition-all space-y-2 ${
+                  editingMitraId === item.id
+                    ? 'border-amber-300 bg-amber-50/40'
+                    : 'border-slate-100 hover:border-blue-200 bg-slate-50/50 hover:bg-white'
+                }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -311,14 +336,23 @@ export default function MitraTab({
                       title="Preview Detail"
                       className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                     >
-                      <Eye size={16} />
+                      <Eye size={15} />
                     </button>
+                    {onEditMitraClick && (
+                      <button
+                        onClick={() => onEditMitraClick(item)}
+                        title="Edit Data Mitra"
+                        className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                      >
+                        <Edit3 size={15} />
+                      </button>
+                    )}
                     <button 
                       onClick={() => handleDeleteMitra(item.id)} 
                       title="Hapus"
                       className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>
