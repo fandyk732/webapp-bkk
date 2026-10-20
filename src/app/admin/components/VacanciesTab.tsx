@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, Trash2, Image as ImageIcon, Edit3, X, Save } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, Edit3, X, Save, CheckCircle } from 'lucide-react';
 import type { JobForm } from '../types';
 
 interface VacanciesTabProps {
@@ -11,6 +11,7 @@ interface VacanciesTabProps {
   handleMajorToggle: (major: string, isJob: boolean) => void;
   vacancies: any[];
   handleToggleJobStatus: (id: string, currentStatus: boolean) => void;
+  handleApproveJob?: (id: string) => void; // 👈 Properti baru untuk approval
   handleDeleteJob: (id: string) => void;
   editingJobId?: string | null;
   onEditJobClick?: (job: any) => void;
@@ -24,6 +25,7 @@ export default function VacanciesTab({
   handleMajorToggle,
   vacancies,
   handleToggleJobStatus,
+  handleApproveJob,
   handleDeleteJob,
   editingJobId,
   onEditJobClick,
@@ -191,16 +193,38 @@ export default function VacanciesTab({
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-slate-800">{job.title}</p>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                        job.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {job.is_active ? 'Aktif' : 'Non-Aktif'}
-                      </span>
+
+                      {/* Badge Conditional Pending vs Aktif/Nonaktif */}
+                      {job.is_approved === false ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                          ⏳ Perlu Approval
+                        </span>
+                      ) : (
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          job.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {job.is_active ? 'Aktif' : 'Non-Aktif'}
+                        </span>
+                      )}
                     </div>
-                    <p className="text-xs text-slate-500">{job.company} • <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">{job.type}</span> • Slot: {(job.quota || 0) - (job.quota_used || 0)}/{job.quota}</p>
+                    <p className="text-xs text-slate-500">
+                      {job.company} • <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">{job.type}</span> • Slot: {(job.quota || 0) - (job.quota_used || 0)}/{job.quota}
+                      {job.contact_person && ` • Kontak: ${job.contact_person}`}
+                    </p>
                   </div>
                 </div>
+
                 <div className="flex items-center gap-1.5">
+                  {/* Tombol Setujui Khusus Lowongan Yang Belum Di-Approve */}
+                  {job.is_approved === false && handleApproveJob && (
+                    <button 
+                      onClick={() => handleApproveJob(job.id)} 
+                      className="text-xs px-2.5 py-1 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                    >
+                      <CheckCircle size={12} /> Setujui
+                    </button>
+                  )}
+
                   <button onClick={() => handleToggleJobStatus(job.id, job.is_active)} className="text-xs px-2.5 py-1 border rounded-lg hover:bg-slate-50">
                     {job.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                   </button>

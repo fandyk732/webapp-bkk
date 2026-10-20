@@ -17,6 +17,7 @@ export default function JobFeed() {
         .from('lowongan_kerja')
         .select('id, title, company, type, majors, location, salary, deadline')
         .eq('is_active', true)
+        .eq('is_approved', true) // 👈 PERBAIKAN DI SINI BROK! (Hanya yang sudah disetujui admin)
         .order('created_at', { ascending: false })
         .limit(4);
 

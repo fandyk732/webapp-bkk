@@ -88,7 +88,7 @@ export default function AdminDashboard() {
       setMitra(mitraData || []);
       setApplicants(applicantsData || []);
 
-      const activeJobs = (vacData || []).filter((v) => v.is_active !== false);
+      const activeJobs = (vacData || []).filter((v) => v.is_active !== false && v.is_approved !== false);
       const pklQuota = (surveyData || []).filter((s) => s.career_plan === 'PKL').length;
       const totalSurvey = (surveyData || []).length;
       const siswaSiap = (surveyData || []).filter((s) => s.career_plan === 'KERJA' || s.career_plan === 'PKL').length;
@@ -257,7 +257,12 @@ export default function AdminDashboard() {
         loadAllData();
       }
     } else {
-      const { error } = await supabase.from('lowongan_kerja').insert([{ ...payload, quota_used: 0, is_active: true }]);
+      const { error } = await supabase.from('lowongan_kerja').insert([{ 
+        ...payload, 
+        quota_used: 0, 
+        is_active: true,
+        is_approved: true // Lowongan dari Admin langsung disetujui
+      }]);
       if (error) alert('Gagal menambah lowongan: ' + error.message);
       else {
         alert('Lowongan berhasil diterbitkan!');
@@ -295,6 +300,21 @@ export default function AdminDashboard() {
   const handleToggleJobStatus = async (id: string, currentStatus: boolean) => {
     await supabase.from('lowongan_kerja').update({ is_active: !currentStatus }).eq('id', id);
     loadAllData();
+  };
+
+  const handleApproveJob = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('lowongan_kerja')
+        .update({ is_approved: true, is_active: true })
+        .eq('id', id);
+
+      if (error) throw error;
+      alert('Lowongan berhasil disetujui dan diterbitkan!');
+      loadAllData();
+    } catch (err: any) {
+      alert('Gagal menyetujui lowongan: ' + err.message);
+    }
   };
 
   const handleUpdateApplicantStatus = async (id: string, status: string) => {
@@ -360,6 +380,7 @@ export default function AdminDashboard() {
             handleMajorToggle={handleMajorToggle} 
             vacancies={vacancies} 
             handleToggleJobStatus={handleToggleJobStatus} 
+            handleApproveJob={handleApproveJob}
             handleDeleteJob={handleDeleteJob} 
             editingJobId={editingJobId}
             onEditJobClick={handleEditJobClick}
