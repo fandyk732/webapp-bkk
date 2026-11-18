@@ -40,9 +40,9 @@ export default function JobBoardClient({ initialVacancies = [] }: JobBoardClient
       return searchOk && majorOk && typeOk && locOk;
     });
 
-    if (sortBy === 'deadline') result = [...result].sort((a, b) => a.daysLeft - b.daysLeft);
-    else if (sortBy === 'newest') result = [...result].sort((a, b) => b.id.localeCompare(a.id));
-    else if (sortBy === 'quota') result = [...result].sort((a, b) => (b.quota - b.quotaUsed) - (a.quota - a.quotaUsed));
+    if (sortBy === 'deadline') result = result.toSorted((a, b) => a.daysLeft - b.daysLeft);
+    else if (sortBy === 'newest') result = result.toSorted((a, b) => b.id.localeCompare(a.id));
+    else if (sortBy === 'quota') result = result.toSorted((a, b) => (b.quota - b.quotaUsed) - (a.quota - a.quotaUsed));
 
     return result;
   }, [search, filterMajor, filterType, filterLocation, sortBy, vacancies]);
